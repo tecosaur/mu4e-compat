@@ -1,0 +1,8 @@
+#+title: Mu4e compatibility aliases
+#+author: tecosaur
+
+Backwards and forwards compatibility for simply renamed function for mu4e =1.x=.
+
+To define backwards-compatible aliases call
+~(mu4e-compat-define-aliases-backwards)~, and for forwards-compatible aliases
+~(mu4e-compat-define-aliases-forwards)~.
