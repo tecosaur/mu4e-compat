@@ -46,37 +46,45 @@
  ((version-list-< '(1 12) mu4e-compat-mu-version)
   (user-error "Your mu4e version is newer than mu4e-compat supports")))
 
-(defun mu4e-compat-define-aliases-backwards ()
-  "Define backwards-compatible aliases, back to Mu4e 1.8."
+(defun mu4e-compat-define-aliases-backwards (&optional oldest)
+  "Define backwards-compatible aliases, back to Mu4e version OLDEST.
+OLDEST can be a \"MAJOR.MINOR\" version string, or unset, in which case
+aliases will be defined for all older versions."
   (dolist (rename-set mu4e-compat--needlessly-breaking-renames-sofar)
     (let ((version (car rename-set)))
-      (dolist (rename (cdr rename-set))
-        (let ((old (car rename))
-              (new (cdr rename))
-              (val (symbol-value (cdr rename))))
-          (cond
-           ((functionp val)
-            (define-obsolete-function-alias old new version))
-           ((facep val)
-            (define-obsolete-variable-alias old new version))
-           ((boundp val)
-            (define-obsolete-variable-alias old new version))))))))
+      (when (or (not oldest)
+                (version<= oldest version))
+        (dolist (rename (cdr rename-set))
+          (let ((old (car rename))
+                (new (cdr rename))
+                (val (symbol-value (cdr rename))))
+            (cond
+             ((functionp val)
+              (define-obsolete-function-alias old new version))
+             ((facep val)
+              (define-obsolete-variable-alias old new version))
+             ((boundp val)
+              (define-obsolete-variable-alias old new version)))))))))
 
-(defun mu4e-compat-define-aliases-forwards ()
-  "Define backwards-compatible aliases, forwards to Mu4e 1.12."
+(defun mu4e-compat-define-aliases-forwards (&optional newest)
+  "Define forwards-compatible aliases, up to Mu4e version NEWEST.
+NEWEST can be a \"MAJOR.MINOR\" version string, or unset, in which case
+aliases will be defined for all newer versions."
   (dolist (rename-set mu4e-compat--needlessly-breaking-renames-future)
     (let ((version (car rename-set)))
-      (dolist (rename (cdr rename-set))
-        (let ((old (car rename))
-              (new (cdr rename))
-              (val (symbol-value (car rename))))
-          (cond
-           ((functionp val)
-            (define-obsolete-function-alias old new version))
-           ((facep val)
-            (define-obsolete-variable-alias old new version))
-           ((boundp val)
-            (define-obsolete-variable-alias old new version))))))))
+      (when (or (not newest)
+                (version<= version newest))
+        (dolist (rename (cdr rename-set))
+          (let ((old (car rename))
+                (new (cdr rename))
+                (val (symbol-value (car rename))))
+            (cond
+             ((functionp val)
+              (define-obsolete-function-alias old new version))
+             ((facep val)
+              (define-obsolete-variable-alias old new version))
+             ((boundp val)
+              (define-obsolete-variable-alias old new version)))))))))
 
 (provide 'mu4e-compat)
 ;;; mu4e-compat.el ends here
